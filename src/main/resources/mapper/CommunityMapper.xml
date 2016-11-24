@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sharebo.mapper.CommunityMapper">
+	<update id="updateparkCountBycommId" parameterType="com.sharebo.entity.Community">
+		update community set psCount=#{psCount} where commId=#{commId}
+	</update>
+	<!-- 查询车位总数 -->
+	<select id="getPsCountByCommId" resultType="int">
+	   SELECT psCount FROM `community` WHERE commId=#{commId}
+	</select>
+	<!-- 查询小区父级 -->
+	<select id="getCommParent" resultType="String">
+	 SELECT commparent FROM `community` WHERE commId=#{commId}
+	</select>
+	<!-- 查询小区是否允许外来车辆进入 -->
+	<select id="getisBanOnForeignCars" resultType="int">
+	    SELECT isBanOnForeignCars FROM `community` WHERE commId=#{commId}
+	</select>
+	<!-- 修改小区是否允许外来车辆进入的状态 -->
+	<update id="updateisBanOnForeignCars">
+	   update community set isBanOnForeignCars=#{isBanOnForeignCars} where commId=#{commId}
+	</update>
+</mapper>

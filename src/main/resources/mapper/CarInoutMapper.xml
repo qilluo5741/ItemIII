@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sharebo.mapper.CarIntoMapper">
+	<!-- 得到当前设备是否进出 -->
+	<select id="getCarIsInout" resultType="int">
+		select isinout from equipment where equipmentNumber=#{serialno}
+	</select>
+	<!-- 验证车辆是否为白名单 -->
+	<select id="valCarIsWhiteList" resultType="int">
+		select count(1) from
+			whitelist where carNo=#{carNo} and commid=(select commid
+			from
+			equipment where equipmentNumber=#{serialno}) and isfailure=0 and
+		periodvalidity>NOW();
+	</select>
+	<!-- 通过设备找到合作方 -->
+	<select id="getPartnerBySerialno" resultType="hashmap">
+		select comm.partner,comm.commId,eq.isTollBooths from community comm,equipment eq where comm.commId=eq.commId and eq.equipmentNumber=#{serialno}
+		<!-- select partner,commId from community where commId=(select  commId  from equipment where equipmentNumber=#{serialno}) -->
+	</select>
+	<!-- 根据小区号，查询下面设备是否存在子集 -->
+	<select id="getCommcommparent" resultType="int">
+		select count(1) from community where commparent=#{commId}
+	</select>
+	<!-- 查询子集下面的白名单 -->
+	<select id="getChidenWByCommIdAndCarNo" resultType="int">
+		select count(1) from whitelist where carNo=#{carNo} AND  isfailure=0 and
+		periodvalidity>NOW() and commId in (select commId from community where commparent=#{commId})
+	</select>
+	<!-- 添加入场记录 -->
+	<insert id="addInVehicie" parameterType="com.sharebo.entity.VehicieInfo">
+		 insert into  vehicle(vehicleId,inTime,carNo,feeModel,iswl,inMac,payType) VALUE(#{vehicleId},now(),#{carNo},#{feeModel},1,#{inMac},0)
+	</insert>
+	<!-- 累加累减车位总数 -->
+	<update id="updatePsConutByCommId">
+		update community set psCount=psCount+${number} where commId=#{commId}
+	</update>
+	<!-- 根据停车场主键查询收费模式 -->
+	<select id="getParkFeeModelByCommId" resultType="string">
+		select feeModelContext from  feetype where feeId=(select feeid from community where commId=#{commId})
+	</select>
+	<!-- 根据停车场Id查询车位总数 -->
+	<select id="getpsCountAndIsBanOnForeignCarsByCommId" resultType="hashmap">
+		select psCount,isBanOnForeignCars from community where commId=#{commId}
+	</select>
+	<!-- 查询驶入信息 -->
+	<select id="getOnDataByCarNo" resultType="com.sharebo.entity.VehicieInfo">
+		select * from  vehicle where carNo=#{carNo} and outTime is null and  inMac in(select equipmentNumber from equipment where commId=#{commId} and isinout=1) order by inTime desc LIMIT 1
+	</select>
+	<!-- 修改驶出信息 -->
+	<update id="updateOutInfo" parameterType="com.sharebo.entity.VehicieInfo">
+		update vehicle set outTime=now(),outMac=#{outMac},arFee=#{arFee},forMinutes=#{forMinutes} where vehicleId=#{vehicleId}
+	</update>
+	<!-- 根据车牌号，小区ID,时间段查询子停车场的行驶记录-->
+	<select id="getChidenVehiceByCarNOAndCommIdAndInTime" resultType="com.sharebo.entity.VehicieInfo">
+		select * from vehicle where outMac in
+			(
+				select equipmentNumber from equipment where isinout=2 
+					and commId in 
+				(
+						select commId from community where commparent=#{commId}
+				)
+			
+			) and carNo=#{carNo} and inTime>#{inTime}  order by inTime desc LIMIT 1
+	</select>
+	<!-- 根据停车场查询未出来的全部车辆信息 -->
+	<select id="getvehicleAllBycommId" resultType="com.sharebo.entity.MatchLicensePlateInfo">
+		select vehicleId,carNo from vehicle where inMac in(select equipmentNumber from  equipment where commId=#{commId} and isinout=1) and outTime is null;
+	</select>
+	<!-- 通过车辆进出Id查询信息 -->
+	<select id="getvehicleByvehicleId" resultType="com.sharebo.entity.VehicieInfo">
+		select * from vehicle where vehicleId=#{vehicleId}
+	</select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sharebo.mapper.WhitelistMapper">
+	<!-- 验证该车位是否是长租 -->
+	<select id="valserwhitelistExists" resultType="int">
+		select count(1) from whitelist where carNo=#{carNo} and commId=#{commId} and isfailure=0
+	</select>
+	<!-- 添加白名单 -->
+	<insert id="addWhitelist" parameterType="com.sharebo.entity.dto.WhitelistDto">
+		INSERT INTO whitelist(whitelistId,commId,carNo,periodvalidity,isfailure,entrytime,name,address,phone,chargeTimeType) 
+		VALUES (UUID_SHORT(),#{commId},#{carNo},#{periodvalidity},0,NOW(),#{name},#{address},#{phone},#{chargeTimeType});
+	</insert>
+	<!-- 修改白名单 -->
+	<update id="updatewhitelist" parameterType="com.sharebo.entity.dto.WhitelistDto">
+		update whitelist set periodvalidity=#{periodvalidity},name=#{name},address=#{address},phone=#{phone} where carNo=#{carNo}
+	</update>
+	<!-- 删除白名单 -->
+	<update id="delectisfailure" parameterType="com.sharebo.entity.Whitelist">
+		update whitelist set isfailure=1 where whitelistId=#{whitelistId} and isfailure=0
+	</update>
+	<!-- 分页查询白名单 -->
+	<select id="getselectWhitelist" parameterType="hashmap" resultType="com.sharebo.entity.dto.WhitelistDto">
+		select w.whitelistId,w.chargeTimeType,w.commId,w.carNo,w.periodvalidity,w.entrytime,w.name,w.address,w.phone,c.cname FROM whitelist w,community c where w.commId = c.commId and w.isfailure = 0 and w.commId in (${commId}) and (w.carNo like '%${carNo}%' and w.name like '%${name}%' and w.address like '%${address}%') ORDER BY entrytime desc limit #{pageBegin},#{pageSize}
+	</select>
+	<!--查询白名单总条数-->
+	<select id="selectWhitelistCount" resultType="Integer">
+		select count(1) from whitelist w,community c where w.commId = c.commId and isfailure = 0 and w.commId in (${commId}) and (w.carNo like '%${carNo}%' and w.name like '%${name}%' and w.address like '%${address}%')
+	</select>
+	<!-- 修改白名单失效 -->
+	<update id="updateIsfailure">
+	  UPDATE whitelist SET isfailure=#{isfailure} WHERE whitelistId=#{whitelistId}
+	</update>
+	<select id="getWhitelistInfo" resultType="com.sharebo.entity.dto.WhitelistDto">
+	   SELECT whitelistId,commId,carNo,periodvalidity,isfailure,entrytime,name,address,phone,chargeTimeType FROM whitelist WHERE whitelistId=#{whitelistId}
+	</select>
+</mapper>

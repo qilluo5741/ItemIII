@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sharebo.mapper.FeeTypeMapper">
+	<!-- 设备表查询 -->
+	<select id="getFeeIdByCommId" resultType="String">
+		SELECT feeId FROM community WHERE commId=#{commId}
+	</select>
+	<!-- 修改收费模式 -->
+	<update id="updateFeeType">
+	  UPDATE feetype SET feeModelContext=#{feeModelContext},updateTime=NOW() WHERE feeId=#{feeId}
+	</update>
+	<!-- 查询收费模式 -->
+	<select id="getFeeType" resultType="String">
+	   SELECT feeModelContext FROM feetype WHERE feeId=(SELECT feeId from community WHERE commId=#{commId})
+	</select>
+	<!-- 修改车辆历史车牌号 -->
+	<update id="updateCarNoByVehicleId">
+	   UPDATE vehicle SET carNo=#{carNo} WHERE vehicleId=#{vehicleId}
+	</update>
+	<!-- 确认收费 -->
+	<update id="confirmCharge">
+	   UPDATE vehicle SET payType=#{payType},paidInFee=#{paidInFee},carType=#{carType},feeTime=NOW() WHERE vehicleId=#{vehicleId}
+	</update>
+</mapper>

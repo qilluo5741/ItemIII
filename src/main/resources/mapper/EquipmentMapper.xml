@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sharebo.mapper.EquipmentMapper">
+	<!-- 设备表查询 -->
+	<select id="getselectEquipmentlist" resultType="com.sharebo.entity.dto.EquipmentDto">
+		select eq.equipmentId,eq.commId,eq.equipmentNumber,eq.isinout,eq.equipmentName,eq.isTollBooths,co.cname,co.caddress,co.commparent from equipment eq,community co where eq.commId=co.commId and eq.commId in (${commId})
+	</select>
+	<!-- 修改设备号 -->
+	<update id="updateequipmentName" parameterType="com.sharebo.entity.dto.EquipmentDto">
+		update equipment set equipmentName=#{equipmentName} where equipmentNumber=#{equipmentNumber}
+	</update>
+	<!-- 取消收费亭 -->
+	<update id="updateIsTollBooths" parameterType="com.sharebo.entity.dto.EquipmentDto">
+	 UPDATE equipment SET isTollBooths=#{isTollBooths} WHERE equipmentNumber=#{equipmentNumber}
+	</update>
+</mapper>
